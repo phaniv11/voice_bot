@@ -1,0 +1,292 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Botium Speech Processing API",
+    "version": "1.0.0",
+    "description": "Botium Speech Processing API"
+  },
+  "basePath": "/",
+  "paths": {
+    "/api/status": {
+      "get": {
+        "description": "Returns Botium Speech Processing Status",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Botium Speech Processing Status",
+            "schema": {
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "OK",
+                    "UNAVAILABLE"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stt/{language}": {
+      "post": {
+        "description": "Convert audio file to text",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "language",
+            "description": "ISO-639-1 language code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hint",
+            "description": "Hint text for calculating the Levenshtein edit distance for the result text (word error rate)",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "stt",
+            "description": "Speech-to-text backend",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "kaldi",
+                "google"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Audio file",
+          "content": {
+            "audio/wav": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Extracted text",
+            "schema": {
+              "properties": {
+                "text": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tts/{language}": {
+      "get": {
+        "description": "Convert text file to audio",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "produces": [
+          "audio/wav"
+        ],
+        "parameters": [
+          {
+            "name": "language",
+            "description": "ISO-639-1 language code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "text",
+            "description": "Text",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tts",
+            "description": "Text-to-speech backend",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "marytts",
+                "picotts"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audio file",
+            "content": {
+              "audio/wav": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/convert/{profile}": {
+      "post": {
+        "description": "Convert audio file",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "produces": [
+          "audio/*"
+        ],
+        "parameters": [
+          {
+            "name": "profile",
+            "description": "Conversion profile (for example WAVTOMONOWAV, MP3TOMONOWAV)",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "description": "Start Timecode within audio stream (01:32)",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^([0-5][0-9]):([0-5][0-9])$"
+            }
+          },
+          {
+            "name": "end",
+            "description": "End Timecode within audio stream (02:48)",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^([0-5][0-9]):([0-5][0-9])$"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Audio file",
+          "content": {
+            "audio/*": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Audio file",
+            "content": {
+              "audio/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wer": {
+      "get": {
+        "description": "Calculate Levenshtein edit distance between two strings (word error rate)",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "text1",
+            "description": "Text",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "text2",
+            "description": "Text",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Levenshtein Edit Distance on word level",
+            "schema": {
+              "properties": {
+                "distance": {
+                  "type": "integer"
+                },
+                "wer": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "BOTIUM_API_TOKEN"
+      }
+    }
+  },
+  "tags": []
+}
